@@ -36,8 +36,8 @@ class VideoStream(MediaStreamTrack):
         elif self.color_mode == 3:
             hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 
-            lower_blue = np.array([170 * 180 // 360, 0, 0])
-            upper_blue = np.array([260 * 180 // 360, 255, 255])
+            lower_blue = np.array([160 * 180 // 360, 0, 0])
+            upper_blue = np.array([270 * 180 // 360, 255, 255])
 
             mask = cv2.inRange(hsv, lower_blue, upper_blue)
             mask = cv2.GaussianBlur(mask, (15, 15), 0)
