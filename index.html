@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC Stream</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Live Video Stream</h1>
+    <video id="video" muted autoplay playsinline></video>
+    <div class="button-container">
+      <button id="button1" class="button" data-color-mode="1"></button>
+      <button id="button2" class="button" data-color-mode="2">To Mars!</button>
+      <button id="button3" class="button" data-color-mode="3">To Bunnyland&#128048;</button>
+    </div>
+  </div>
+  <style>
+    body {
+      margin: 0;
+      background: lightskyblue;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      text-align: center;
+      color: white;
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      display: inline-block;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      max-width: 80%;
+    }
+    
+    #video {
+      display: block;
+      max-width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+    
+    .button {
+      display: flex;
+      align-items: center;
+      width: fit-content;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      line-height: 1.2em;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+    
+    .button:active {
+      transform: scale(0.95);
+    }
+    
+    #button1 {
+      display: none;
+      background: #007bff;
+    }
+    
+    #button1:hover {
+      background: #0056b3;
+    }
+    
+    #button2 {
+      background: #FFA500;
+    }
+    
+    #button2:hover {
+      background: #FF7F00;
+    }
+    
+    #button3 {
+      background: #FADADD;
+    }
+    
+    #button3:hover {
+      background: #F4A6B5;
+    }
+
+    .floating-bunny {
+      position: absolute;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const pc = new RTCPeerConnection({
+        iceServers: [
+        { urls: "stun:stun4.l.google.com:19302" }
+        ]
+      });
+      
+      const waitForIceCandidates = async pc => {
+        if (pc.iceGatheringState === "complete") return;
+        
+        await new Promise(resolve => {
+          const checkState = () => {
+            if (pc.iceGatheringState === "complete") {
+              pc.removeEventListener("icegatheringstatechange", checkState);
+              resolve();
+            }
+          };
+          pc.addEventListener("icegatheringstatechange", checkState);
+        });
+      };
+      
+      const startWebRTC = async () => {
+        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.ontrack = event => {
+          document.getElementById("video").srcObject = event.streams[0];
+        };
+        
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        await waitForIceCandidates(pc);
+        
+        const response = await fetch("/offer", {
+          method: "POST",
+          body: JSON.stringify({sdp: pc.localDescription.sdp, type: pc.localDescription.type}),
+          headers: {"Content-Type": "application/json"}
+        });
+        
+        const answer = await response.json();
+        await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        return answer.session_id;
+      };
+
+      const bunnySizes = [16, 32, 64];
+      const intervalTime = 2000;
+      let currentFibonacciNumber = 1;
+      let nextFibonacciNumber = 1;
+      let interval;
+      const timeoutSet = new Set();
+
+      const styleSheet = document.querySelector("#dynamic-styles") || (() => {
+        const sheet = document.createElement("style");
+        sheet.id = "dynamic-styles";
+        document.head.appendChild(sheet);
+        return sheet;
+      })();
+      
+      const getScaleAndTranslate = direction => {
+        switch (direction) {
+          case "l":
+            return [1, -1];
+          case "r":
+            return [-1, -1];
+          case "f":
+            return [1, 0];
+        }
+      };
+
+      for (const bunnySize of bunnySizes) {
+        for (const direction of ["l", "r", "f"]) {
+          const [scale, translate] = getScaleAndTranslate(direction);
+          styleSheet.sheet.insertRule(`
+            @keyframes bunny${bunnySize}${direction} {
+              25% { transform: scaleX(${scale}) translateY(0); }
+              50% { transform: scaleX(${scale}) translateX(${bunnySize * translate}px) translateY(-${bunnySize}px); }
+              75% { transform: scaleX(${scale}) translateX(${2 * bunnySize * translate}px) translateY(0); }
+              100% { transform: scaleX(${scale}) translateX(${2 * bunnySize * translate}px) translateY(0); }
+            }
+          `, styleSheet.sheet.cssRules.length);
+        }
+      }
+      
+      const getRandomInt = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      };
+
+      const addBunny = () => {
+        let bunny;
+        let direction;
+        if (Math.random() < 1 / 3) {
+          bunny = "&#128048;";
+          direction = "f";
+        } else {
+          bunny = "&#128007;";
+          if (Math.random() < 1 / 2) {
+            direction = "l";
+          } else {
+            direction = "r";
+          }
+        }
+        const [scale, translate] = getScaleAndTranslate(direction);
+        const bunnySize = bunnySizes[getRandomInt(0, bunnySizes.length - 1)];
+        const leftPosition = getRandomInt(0, window.innerWidth - bunnySize) + 'px';
+        const topPosition = getRandomInt(Math.floor(window.innerHeight * .7), window.innerHeight - bunnySize) + 'px';
+        
+        const bunnyElement = document.createElement("div");
+        bunnyElement.innerHTML = bunny;
+        bunnyElement.classList.add("floating-bunny");
+        bunnyElement.style.fontSize = `${bunnySize}px`;
+        bunnyElement.style.left = leftPosition;
+        bunnyElement.style.top = topPosition;
+        bunnyElement.style.transform = `scaleX(${scale})`;
+        bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
+        bunnyElement.addEventListener("animationend", () => {
+          let currentLeft = parseFloat(bunnyElement.style.left);
+          currentLeft = (currentLeft + 2 * bunnySize * scale * translate + window.innerWidth) % window.innerWidth;
+          bunnyElement.style.animation = "none";
+          bunnyElement.style.left = `${currentLeft}px`;
+          void bunnyElement.offsetHeight;
+          bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
+        });
+        
+        document.body.appendChild(bunnyElement);
+      };
+      
+      const addFibonacciBunnies = () => {
+        interval = setInterval(() => {
+          for (let i = 0; i < currentFibonacciNumber; i++) {
+            const timeoutId = setTimeout(() => {
+              addBunny();
+              timeoutSet.delete(timeoutId);
+            }, Math.random() * intervalTime);
+            timeoutSet.add(timeoutId);
+          }
+          nextFibonacciNumber = currentFibonacciNumber + nextFibonacciNumber;
+          currentFibonacciNumber = nextFibonacciNumber - currentFibonacciNumber;
+        }, intervalTime);
+      };
+      
+      const clearBunnies = () => {
+        timeoutSet.forEach(id => clearTimeout(id));
+        timeoutSet.clear();
+        clearInterval(interval);
+        currentFibonacciNumber = 1;
+        nextFibonacciNumber = 1;
+        
+        document.querySelectorAll('.floating-bunny').forEach(bunny => {
+          bunny.remove();
+        });
+      };
+      
+      startWebRTC().then(sessionId => {
+        const button1 = document.getElementById("button1");
+        const button2 = document.getElementById("button2");
+        const button3 = document.getElementById("button3");
+        document.querySelectorAll(".button").forEach(buttonElement => {
+          buttonElement.addEventListener("click", event => {
+            const colorMode = event.target.getAttribute("data-color-mode");
+            fetch("/switch", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ session_id: sessionId, color_mode: colorMode })
+            })
+            .then(response => response.json())
+            .then(data => {
+              switch (data.color_mode) {
+                case 1:
+                clearBunnies();
+                document.body.style.background = "lightskyblue";
+                button1.style.display = "none";
+                button2.style.display = "block";
+                button3.style.display = "block";
+                break;
+                case 2:
+                document.body.style.background = "lightcoral";
+                button1.innerText = "Gimme a break, back to Earth!";
+                button1.style.display = "block";
+                button2.style.display = "none";
+                button3.style.display = "none";
+                break;
+                case 3:
+                document.body.style.background = "linear-gradient(to bottom, lightpink 60%, lightgreen 80%)";
+                button1.innerText = "Mayday! Cuteness overload!";
+                button1.style.display = "block";
+                button2.style.display = "none";
+                button3.style.display = "none";
+                addFibonacciBunnies();
+                break;
+              }
+            })
+            .catch(error => console.error("Error:", error));
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>
