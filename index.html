@@ -270,7 +270,7 @@
         const button3 = document.getElementById("button3");
         document.querySelectorAll(".button").forEach(buttonElement => {
           buttonElement.addEventListener("click", event => {
-            const colorMode = event.target.getAttribute("data-color-mode");
+            const colorMode = event.target.closest("button").getAttribute("data-color-mode");
             fetch("/switch", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
