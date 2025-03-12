@@ -95,7 +95,7 @@
     #button3:hover {
       background: #F4A6B5;
     }
-
+    
     .floating-bunny {
       position: absolute;
     }
@@ -143,14 +143,14 @@
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
         return answer.session_id;
       };
-
+      
       const bunnySizes = [16, 32, 64];
       const intervalTime = 2000;
       let currentFibonacciNumber = 1;
       let nextFibonacciNumber = 1;
       let interval;
       const timeoutSet = new Set();
-
+      
       const styleSheet = document.querySelector("#dynamic-styles") || (() => {
         const sheet = document.createElement("style");
         sheet.id = "dynamic-styles";
@@ -161,18 +161,18 @@
       const getScaleAndTranslate = direction => {
         switch (direction) {
           case "l":
-            return [1, -1];
+          return [1, -1];
           case "r":
-            return [-1, -1];
+          return [-1, -1];
           case "f":
-            return [1, 0];
+          return [1, 0];
         }
       };
-
+      
       const uTurn = direction => {
         return direction === "l" ? "r" : "l";
       }
-
+      
       for (const bunnySize of bunnySizes) {
         for (const direction of ["l", "r", "f"]) {
           const [scale, translate] = getScaleAndTranslate(direction);
@@ -190,7 +190,7 @@
       const getRandomInt = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1)) + min;
       };
-
+      
       const addBunny = () => {
         let bunny;
         let direction;
