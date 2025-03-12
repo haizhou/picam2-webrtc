@@ -40,7 +40,7 @@ class VideoStream(MediaStreamTrack):
             upper_blue = np.array([280 * 180 // 360, 225, 225])
 
             mask = cv2.inRange(hsv, lower_blue, upper_blue)
-            mask = cv2.medianBlur(mask, 15)
+            mask = cv2.GaussianBlur(mask, (15, 15), 0)
             mask = np.float32(mask) / 255
             mask3 = cv2.merge([mask, mask, mask])
 
