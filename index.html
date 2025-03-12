@@ -169,7 +169,7 @@
         }
       };
 
-      const toggleDirection = direction => {
+      const uTurn = direction => {
         return direction === "l" ? "r" : "l";
       }
 
@@ -228,7 +228,7 @@
           if (translate != 0) {
             if (Math.random() < 1 / 2) {
               scale = -scale;
-              direction = toggleDirection(direction);
+              direction = uTurn(direction);
               bunnyElement.style.transform = `scaleX(${scale})`;
             }
           }
