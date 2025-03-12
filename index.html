@@ -102,6 +102,8 @@
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      const videoElement = document.getElementById("video");
+
       const pc = new RTCPeerConnection({
         iceServers: [
         { urls: "stun:stun4.l.google.com:19302" }
@@ -125,7 +127,7 @@
       const startWebRTC = async () => {
         pc.addTransceiver("video", { direction: "recvonly" });
         pc.ontrack = event => {
-          document.getElementById("video").srcObject = event.streams[0];
+          videoElement.srcObject = event.streams[0];
         };
         
         const offer = await pc.createOffer();
@@ -265,6 +267,10 @@
       };
       
       startWebRTC().then(sessionId => {
+        videoElement.addEventListener("dblclick", () => {
+          videoElement.requestFullscreen();
+        });
+
         const button1 = document.getElementById("button1");
         const button2 = document.getElementById("button2");
         const button3 = document.getElementById("button3");
