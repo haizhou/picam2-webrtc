@@ -168,6 +168,10 @@
         }
       };
 
+      const toggleDirection = direction => {
+        return direction === "l" ? "r" : "l";
+      }
+
       for (const bunnySize of bunnySizes) {
         for (const direction of ["l", "r", "f"]) {
           const [scale, translate] = getScaleAndTranslate(direction);
@@ -200,7 +204,7 @@
             direction = "r";
           }
         }
-        const [scale, translate] = getScaleAndTranslate(direction);
+        let [scale, translate] = getScaleAndTranslate(direction);
         const bunnySize = bunnySizes[getRandomInt(0, bunnySizes.length - 1)];
         const leftPosition = getRandomInt(0, window.innerWidth - bunnySize) + 'px';
         const topPosition = getRandomInt(Math.floor(window.innerHeight * .7), window.innerHeight - bunnySize) + 'px';
@@ -216,9 +220,17 @@
         bunnyElement.addEventListener("animationend", () => {
           let currentLeft = parseFloat(bunnyElement.style.left);
           currentLeft = (currentLeft + 2 * bunnySize * scale * translate + window.innerWidth) % window.innerWidth;
-          bunnyElement.style.animation = "none";
           bunnyElement.style.left = `${currentLeft}px`;
+          bunnyElement.style.animation = "none";
           void bunnyElement.offsetHeight;
+          
+          if (translate != 0) {
+            if (Math.random() < 1 / 2) {
+              scale = -scale;
+              direction = toggleDirection(direction);
+              bunnyElement.style.transform = `scaleX(${scale})`;
+            }
+          }
           bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
         });
         
