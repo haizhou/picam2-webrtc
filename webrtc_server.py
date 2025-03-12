@@ -46,7 +46,7 @@ class VideoStream(MediaStreamTrack):
 
             hsv[:, :, 0] = (hsv[:, :, 0] + 158 * 180 // 360) % 180
             hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1 - 50 / 100), 0, 255)
-            hsv[:, :, 2] = np.clip(hsv[:, :, 2] * (1 + 50 / 100), 0, 255)
+            hsv[:, :, 2] = np.clip(hsv[:, :, 2] * (1 + 25 / 100), 0, 255)
             pink = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
             frame = np.uint8(
