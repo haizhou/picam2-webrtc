@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>WebRTC Stream</title>
 </head>
+
 <body>
   <div class="container">
     <h1>Live Video Stream</h1>
@@ -19,7 +21,7 @@
       overflow: hidden;
       background: lightskyblue;
     }
-    
+
     body::after {
       content: "";
       position: absolute;
@@ -38,7 +40,7 @@
       justify-content: center;
       height: 100vh;
     }
-    
+
     h1 {
       font-size: 3rem;
       font-weight: bold;
@@ -50,19 +52,19 @@
       text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
       max-width: 80%;
     }
-    
+
     #video {
       display: block;
       max-width: 100%;
       margin-bottom: 10px;
     }
-    
+
     .button-container {
       display: flex;
       gap: 10px;
       flex-wrap: nowrap;
     }
-    
+
     .button {
       display: flex;
       align-items: center;
@@ -77,36 +79,36 @@
       transition: background 0.3s, transform 0.1s;
       z-index: 10;
     }
-    
+
     .button:active {
       transform: scale(0.95);
     }
-    
+
     #button1 {
       display: none;
       background: #007bff;
     }
-    
+
     #button1:hover {
       background: #0056b3;
     }
-    
+
     #button2 {
       background: #FFA500;
     }
-    
+
     #button2:hover {
       background: #FF7F00;
     }
-    
+
     #button3 {
       background: #FADADD;
     }
-    
+
     #button3:hover {
       background: #F4A6B5;
     }
-    
+
     .floating-bunny {
       position: absolute;
     }
@@ -117,13 +119,13 @@
 
       const pc = new RTCPeerConnection({
         iceServers: [
-        { urls: "stun:stun4.l.google.com:19302" }
+          { urls: "stun:stun4.l.google.com:19302" }
         ]
       });
-      
+
       const waitForIceCandidates = async pc => {
         if (pc.iceGatheringState === "complete") return;
-        
+
         await new Promise(resolve => {
           const checkState = () => {
             if (pc.iceGatheringState === "complete") {
@@ -134,58 +136,58 @@
           pc.addEventListener("icegatheringstatechange", checkState);
         });
       };
-      
+
       const startWebRTC = async () => {
         pc.addTransceiver("video", { direction: "recvonly" });
         pc.ontrack = event => {
           videoElement.srcObject = event.streams[0];
         };
-        
+
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        
+
         await waitForIceCandidates(pc);
-        
+
         const response = await fetch("/offer", {
           method: "POST",
-          body: JSON.stringify({sdp: pc.localDescription.sdp, type: pc.localDescription.type}),
-          headers: {"Content-Type": "application/json"}
+          body: JSON.stringify({ sdp: pc.localDescription.sdp, type: pc.localDescription.type }),
+          headers: { "Content-Type": "application/json" }
         });
-        
+
         const answer = await response.json();
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
         return answer.session_id;
       };
-      
+
       const bunnySizes = [16, 32, 64];
       const intervalTime = 2000;
       let currentFibonacciNumber = 1;
       let nextFibonacciNumber = 1;
       let interval;
       const timeoutSet = new Set();
-      
+
       const styleSheet = document.querySelector("#dynamic-styles") || (() => {
         const sheet = document.createElement("style");
         sheet.id = "dynamic-styles";
         document.head.appendChild(sheet);
         return sheet;
       })();
-      
+
       const getScaleAndTranslate = direction => {
         switch (direction) {
           case "l":
-          return [1, -1];
+            return [1, -1];
           case "r":
-          return [-1, -1];
+            return [-1, -1];
           case "f":
-          return [1, 0];
+            return [1, 0];
         }
       };
-      
+
       const uTurn = direction => {
         return direction === "l" ? "r" : "l";
       }
-      
+
       for (const bunnySize of bunnySizes) {
         for (const direction of ["l", "r", "f"]) {
           const [scale, translate] = getScaleAndTranslate(direction);
@@ -199,7 +201,7 @@
           `, styleSheet.sheet.cssRules.length);
         }
       }
-      
+
       const addBunny = () => {
         let bunny;
         let direction;
@@ -224,7 +226,7 @@
         let topPosition = Math.floor(window.innerHeight * .7) + topRelative;
         leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
         topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
-        
+
         const bunnyElement = document.createElement("div");
         bunnyElement.innerHTML = bunny;
         bunnyElement.classList.add("floating-bunny");
@@ -239,7 +241,7 @@
           bunnyElement.style.left = `${currentLeft}px`;
           bunnyElement.style.animation = "none";
           void bunnyElement.offsetHeight;
-          
+
           if (translate != 0) {
             if (Math.random() < 1 / 2) {
               scale = -scale;
@@ -249,10 +251,10 @@
           }
           bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
         });
-        
+
         document.body.appendChild(bunnyElement);
       };
-      
+
       const addFibonacciBunnies = () => {
         interval = setInterval(() => {
           for (let i = 0; i < currentFibonacciNumber; i++) {
@@ -266,19 +268,19 @@
           currentFibonacciNumber = nextFibonacciNumber - currentFibonacciNumber;
         }, intervalTime);
       };
-      
+
       const clearBunnies = () => {
         timeoutSet.forEach(id => clearTimeout(id));
         timeoutSet.clear();
         clearInterval(interval);
         currentFibonacciNumber = 1;
         nextFibonacciNumber = 1;
-        
+
         document.querySelectorAll('.floating-bunny').forEach(bunny => {
           bunny.remove();
         });
       };
-      
+
       startWebRTC().then(sessionId => {
         videoElement.addEventListener("dblclick", () => {
           videoElement.requestFullscreen();
@@ -295,38 +297,39 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ session_id: sessionId, color_mode: colorMode })
             })
-            .then(response => response.json())
-            .then(data => {
-              switch (data.color_mode) {
-                case 1:
-                clearBunnies();
-                document.body.style.background = "lightskyblue";
-                button1.style.display = "none";
-                button2.style.display = "block";
-                button3.style.display = "block";
-                break;
-                case 2:
-                document.body.style.background = "orange";
-                button1.innerText = "Gimme a break, back to Earth!";
-                button1.style.display = "block";
-                button2.style.display = "none";
-                button3.style.display = "none";
-                break;
-                case 3:
-                document.body.style.background = "linear-gradient(to bottom, lightpink 60%, lightgreen 80%)";
-                button1.innerText = "Mayday! Cuteness overload!";
-                button1.style.display = "block";
-                button2.style.display = "none";
-                button3.style.display = "none";
-                addFibonacciBunnies();
-                break;
-              }
-            })
-            .catch(error => console.error("Error:", error));
+              .then(response => response.json())
+              .then(data => {
+                switch (data.color_mode) {
+                  case 1:
+                    clearBunnies();
+                    document.body.style.background = "lightskyblue";
+                    button1.style.display = "none";
+                    button2.style.display = "block";
+                    button3.style.display = "block";
+                    break;
+                  case 2:
+                    document.body.style.background = "orange";
+                    button1.innerText = "Gimme a break, back to Earth!";
+                    button1.style.display = "block";
+                    button2.style.display = "none";
+                    button3.style.display = "none";
+                    break;
+                  case 3:
+                    document.body.style.background = "linear-gradient(to bottom, lightpink 60%, lightgreen 80%)";
+                    button1.innerText = "Mayday! Cuteness overload!";
+                    button1.style.display = "block";
+                    button2.style.display = "none";
+                    button3.style.display = "none";
+                    addFibonacciBunnies();
+                    break;
+                }
+              })
+              .catch(error => console.error("Error:", error));
           });
         });
       });
     });
   </script>
 </body>
+
 </html>
