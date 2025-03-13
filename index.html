@@ -200,10 +200,6 @@
         }
       }
       
-      const getRandomInt = (min, max) => {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      };
-      
       const addBunny = () => {
         let bunny;
         let direction;
@@ -219,16 +215,20 @@
           }
         }
         let [scale, translate] = getScaleAndTranslate(direction);
-        const bunnySize = bunnySizes[getRandomInt(0, bunnySizes.length - 1)];
-        const leftPosition = getRandomInt(0, window.innerWidth - bunnySize) + 'px';
-        const topPosition = getRandomInt(Math.floor(window.innerHeight * .7), window.innerHeight - bunnySize) + 'px';
+        let leftPosition = Math.floor(Math.random() * window.innerWidth);
+        const topFactor = Math.random();
+        const topRelative = Math.floor(topFactor * window.innerHeight * .3);
+        let topPosition = (Math.floor(window.innerHeight * .7) + topRelative);
+        const bunnySize = bunnySizes[topFactor < 1 / 4 ? 0 : topFactor < 1 / 2 ? 1 : 2];
+        leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
+        topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
         
         const bunnyElement = document.createElement("div");
         bunnyElement.innerHTML = bunny;
         bunnyElement.classList.add("floating-bunny");
         bunnyElement.style.fontSize = `${bunnySize}px`;
-        bunnyElement.style.left = leftPosition;
-        bunnyElement.style.top = topPosition;
+        bunnyElement.style.left = `${leftPosition}px`;
+        bunnyElement.style.top = `${topPosition}px`;
         bunnyElement.style.transform = `scaleX(${scale})`;
         bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
         bunnyElement.addEventListener("animationend", () => {
