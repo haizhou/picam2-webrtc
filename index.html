@@ -215,11 +215,13 @@
           }
         }
         let [scale, translate] = getScaleAndTranslate(direction);
+        const sizeFactor = Math.random() * bunnySizes.length;
+        const distanceFactor = Math.exp(sizeFactor) / Math.exp(bunnySizes.length);
+        const bunnySize = bunnySizes[Math.floor(sizeFactor)];
+
         let leftPosition = Math.floor(Math.random() * window.innerWidth);
-        const topFactor = Math.random();
-        const topRelative = Math.floor(topFactor * window.innerHeight * .3);
-        let topPosition = (Math.floor(window.innerHeight * .7) + topRelative);
-        const bunnySize = bunnySizes[topFactor < 1 / 4 ? 0 : topFactor < 1 / 2 ? 1 : 2];
+        const topRelative = Math.floor(distanceFactor * window.innerHeight * .3);
+        let topPosition = Math.floor(window.innerHeight * .7) + topRelative;
         leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
         topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
         
