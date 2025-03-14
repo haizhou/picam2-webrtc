@@ -77,7 +77,7 @@
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s, transform 0.1s;
-      z-index: 100000;
+      z-index: 10;
     }
 
     .button:active {
@@ -114,6 +114,7 @@
     }
 
     .floating-chick {
+      position: absolute;
       z-index: 99999;
     }
   </style>
@@ -177,7 +178,7 @@
         return sheet;
       })();
 
-      const getScaleAndTranslate = direction => {
+      const getScaleXAndTranslateX = direction => {
         switch (direction) {
           case "l":
             return [1, -1];
@@ -194,13 +195,13 @@
 
       for (const bunnySize of bunnySizes) {
         for (const direction of ["l", "r", "f"]) {
-          const [scale, translate] = getScaleAndTranslate(direction);
+          const [scaleX, translateX] = getScaleXAndTranslateX(direction);
           styleSheet.sheet.insertRule(`
             @keyframes bunny${bunnySize}${direction} {
-              25% { transform: scaleX(${scale}) translateY(0); }
-              50% { transform: scaleX(${scale}) translateX(${bunnySize * translate}px) translateY(-${bunnySize}px); }
-              75% { transform: scaleX(${scale}) translateX(${2 * bunnySize * translate}px) translateY(0); }
-              100% { transform: scaleX(${scale}) translateX(${2 * bunnySize * translate}px) translateY(0); }
+              25% { transform: scaleX(${scaleX}) translateY(0); }
+              50% { transform: scaleX(${scaleX}) translateX(${bunnySize * translateX}px) translateY(-${bunnySize}px); }
+              75% { transform: scaleX(${scaleX}) translateX(${2 * bunnySize * translateX}px) translateY(0); }
+              100% { transform: scaleX(${scaleX}) translateX(${2 * bunnySize * translateX}px) translateY(0); }
             }
           `, styleSheet.sheet.cssRules.length);
         }
@@ -208,18 +209,25 @@
 
       const horizonFactor = .7;
 
+      const getSizeByDistanceScale = distanceScale => {
+        const minSize = bunnySizes[0];
+        const maxSize = bunnySizes.at(-1);
+        const sizeScale = Math.log(maxSize) / Math.log(minSize);
+        return Math.floor(minSize ** ((1 - distanceScale) * sizeScale));
+      };
+
       const addBunny = () => {
         let bunny;
         let direction = Math.random();
         direction = direction < 1 / 3 ? "f" : direction < 2 / 3 ? "l" : "r";
         bunny = direction === "f" ? "&#128048;" : "&#128007;";
-        let [scale, translate] = getScaleAndTranslate(direction);
-        const sizeFactor = Math.random() * bunnySizes.length;
-        const distanceFactor = Math.exp(sizeFactor) / Math.exp(bunnySizes.length);
-        const bunnySize = bunnySizes[Math.floor(sizeFactor)];
+        let [scaleX, translateX] = getScaleXAndTranslateX(direction);
+        const distance = Math.random();
+        const distanceScale = (Math.exp(distance * bunnySizes.length) - 1) / (Math.exp(bunnySizes.length) - 1);
+        const bunnySize = bunnySizes.findLast(s => s / Math.SQRT2 < getSizeByDistanceScale(distanceScale));
 
         let leftPosition = Math.floor(Math.random() * window.innerWidth);
-        const topRelative = Math.floor(distanceFactor * window.innerHeight * (1 - horizonFactor));
+        const topRelative = Math.floor((1 - distanceScale) * window.innerHeight * (1 - horizonFactor));
         let topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
         leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
         topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
@@ -230,20 +238,20 @@
         bunnyElement.style.fontSize = `${bunnySize}px`;
         bunnyElement.style.left = `${leftPosition}px`;
         bunnyElement.style.top = `${topPosition}px`;
-        bunnyElement.style.transform = `scaleX(${scale})`;
+        bunnyElement.style.transform = `scaleX(${scaleX})`;
         bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
         bunnyElement.addEventListener("animationend", () => {
           let currentLeft = parseFloat(bunnyElement.style.left);
-          currentLeft = (currentLeft + 2 * bunnySize * scale * translate + window.innerWidth) % window.innerWidth;
+          currentLeft = (currentLeft + 2 * bunnySize * scaleX * translateX + window.innerWidth) % window.innerWidth;
           bunnyElement.style.left = `${currentLeft}px`;
           bunnyElement.style.animation = "none";
           void bunnyElement.offsetHeight;
 
-          if (translate != 0) {
+          if (translateX != 0) {
             if (Math.random() < 1 / 2) {
-              scale = -scale;
+              scaleX = -scaleX;
               direction = uTurn(direction);
-              bunnyElement.style.transform = `scaleX(${scale})`;
+              bunnyElement.style.transform = `scaleX(${scaleX})`;
             }
           }
           bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
@@ -253,34 +261,37 @@
       };
 
       const addChickin = () => {
-        const chick = "&#128019;";
+        const chick1 = "&#128020;";
+        const chick2 = "&#128019;";
         const chickElement = document.createElement("div");
-        let topRelative = Math.floor(Math.random(window.innerHeight * (1 - horizonFactor)));
-        let topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
-        let leftPosition = Math.floor(Math.random(window.innerWidth));
-        chickElement.innerHTML = chick;
-        chickElement.style.fontSize = "32px";
-        chickElement.style.top = topPosition;
-        chickElement.style.left = leftPosition;
+        chickElement.classList.add("floating-chick");
+        const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor));
+        const distance = Math.random();
+        const distanceScale = (Math.exp(distance * bunnySizes.length) - 1) / (Math.exp(bunnySizes.length) - 1);
+        const topRelative = Math.floor((1 - distanceScale) * rangeHeight);
+        const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
+        const leftPosition = Math.floor(Math.random() * window.innerWidth);
+
+        let chickSize = Math.round(getSizeByDistanceScale(distanceScale));
+        chickElement.innerHTML = chick1;
+        chickElement.style.fontSize = `${chickSize}px`;
+        chickElement.style.top = `${topPosition}px`;
+        chickElement.style.left = `${leftPosition}px`;
         document.body.appendChild(chickElement);
 
-        let lastTime = performance.now();
-        const range = currentTime => {
-          let deltaTime = (currentTime - lastTime) / 1000;
-          let topDelta = Math.floor(Math.random() * 3) - 1;
-          let leftDelta = Math.floor(Math.random() * 3) - 1;
-          topDelta *= deltaTime;
-          leftDelta *= deltaTime;
-          topRelative += topDelta;
-          let yRange = Math.floor(window.innerHeight * (1 - horizonFactor));
-          topRelative = (topRelative + topDelta + yRange) % yRange;
-          leftPosition = (leftPosition + leftDelta + window.innerWidth) % window.innerWidth;
-          topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
+        let translateX = 0, translateY = 0, scaleX = 1;
+        setInterval(() => {
+          const deltaX = Math.floor(Math.random() * 3) - 1;
+          const deltaY = Math.floor(Math.random() * 3) - 1;
+          scaleX = deltaX != 0 ? -deltaX : scaleX;
+          chickElement.innerHTML = deltaX == 0 ? chick1 : chick2;
+          translateX = (leftPosition + translateX + deltaX * chickSize) % window.innerWidth - leftPosition;
+          translateY = (topRelative + translateY + deltaY * chickSize) % rangeHeight - topRelative;
+          chickElement.style.transform = `translate(${translateX}px, ${translateY}px) scaleX(${scaleX})`;
 
-          chickElement.style.transform = `translate(${leftPosition}px, ${topPosition}px)`;
-          requestAnimationFrame(range);
-        };
-        requestAnimationFrame(range);
+          chickSize = Math.round(getSizeByDistanceScale((topRelative + translateY) / rangeHeight));
+          chickElement.style.fontSize = `${chickSize}px`;
+        }, intervalTime / 2);
       };
 
       const addFibonacciBunnies = () => {
@@ -354,6 +365,7 @@
                     button2.style.display = "none";
                     button3.style.display = "none";
                     addFibonacciBunnies();
+                    addChickin();
                     break;
                 }
               })
