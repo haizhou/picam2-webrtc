@@ -217,7 +217,7 @@
         const minSize = bunnySizes[0];
         const maxSize = bunnySizes.at(-1);
         const sizeScale = Math.log(maxSize) / Math.log(minSize);
-        return Math.floor(minSize ** (rangeScale * sizeScale));
+        return Math.floor(minSize ** (1 + rangeScale * (sizeScale - 1)));
       };
 
       const addBunny = () => {
