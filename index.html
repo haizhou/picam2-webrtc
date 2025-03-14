@@ -211,7 +211,7 @@
       const chickBunnySizeRatio = 2;
 
       const getRangeScale = distance => {
-        return (2 ** ((1 - distance) * bunnySizes.length) - 1) / (2 ** bunnySizes.length - 1);
+        return (Math.exp((1 - distance) * bunnySizes.length) - 1) / (Math.exp(bunnySizes.length) - 1);
       };
 
       const getSizeByRangeScale = rangeScale => {
@@ -284,18 +284,26 @@
         document.body.appendChild(chickElement);
 
         let translateX = 0, translateY = 0, scaleX = 1;
-        setInterval(() => {
-          const deltaX = Math.floor(Math.random() * 3) - 1;
-          const deltaY = Math.floor(Math.random() * 3) - 1;
-          scaleX = deltaX != 0 ? -deltaX : scaleX;
-          chickElement.innerHTML = deltaX == 0 ? chick1 : chick2;
-          translateX = (leftPosition + translateX + deltaX * chickSize + window.innerWidth) % window.innerWidth - leftPosition;
-          translateY = (topRelative + translateY + deltaY * chickSize + rangeHeight) % rangeHeight - topRelative;
-          chickElement.style.transform = `translate(${translateX}px, ${translateY}px) scaleX(${scaleX})`;
+        const framePerSecond = 4;
+        const stepSizeRatio = .1;
+        const lastTime = performance.now();
+        range = (timestamp) => {
+          if (timestamp - lastTime >= 1000 / framePerSecond) {
+            lastTime = timestamp;
+            const deltaX = Math.floor(Math.random() * 3) - 1;
+            const deltaY = Math.floor(Math.random() * 3) - 1;
+            scaleX = deltaX != 0 ? -deltaX : scaleX;
+            chickElement.innerHTML = deltaX == 0 ? chick1 : chick2;
+            translateX = (leftPosition + translateX + deltaX * chickSize * stepSizeRatio + window.innerWidth) % window.innerWidth - leftPosition;
+            translateY = (topRelative + translateY + deltaY * chickSize * stepSizeRatio + rangeHeight) % rangeHeight - topRelative;
+            chickElement.style.transform = `translate(${translateX}px, ${translateY}px) scaleX(${scaleX})`;
 
-          chickSize = Math.round(chickBunnySizeRatio * getSizeByRangeScale((topRelative + translateY) / rangeHeight));
-          chickElement.style.fontSize = `${chickSize}px`;
-        }, intervalTime / 2);
+            chickSize = Math.round(chickBunnySizeRatio * getSizeByRangeScale((topRelative + translateY) / rangeHeight));
+            chickElement.style.fontSize = `${chickSize}px`;
+          }
+          requestAnimationFrame(range);
+        };
+        requestAnimationFrame(range);
       };
 
       const addFibonacciBunnies = () => {
