@@ -209,11 +209,15 @@
 
       const horizonFactor = .7;
 
-      const getSizeByDistanceScale = distanceScale => {
+      const getRangeScale = distance => {
+        return (2 ** ((1 - distance) * bunnySizes.length) - 1) / (2 ** bunnySizes.length - 1);
+      };
+
+      const getSizeByRangeScale = rangeScale => {
         const minSize = bunnySizes[0];
         const maxSize = bunnySizes.at(-1);
         const sizeScale = Math.log(maxSize) / Math.log(minSize);
-        return Math.floor(minSize ** ((1 - distanceScale) * sizeScale));
+        return Math.floor(minSize ** (rangeScale * sizeScale));
       };
 
       const addBunny = () => {
@@ -223,11 +227,11 @@
         bunny = direction === "f" ? "&#128048;" : "&#128007;";
         let [scaleX, translateX] = getScaleXAndTranslateX(direction);
         const distance = Math.random();
-        const distanceScale = (Math.exp(distance * bunnySizes.length) - 1) / (Math.exp(bunnySizes.length) - 1);
-        const bunnySize = bunnySizes.findLast(s => s / Math.SQRT2 < getSizeByDistanceScale(distanceScale));
+        const rangeScale = getRangeScale(distance);
+        const bunnySize = bunnySizes.findLast(s => s / Math.SQRT2 < getSizeByRangeScale(rangeScale));
 
         let leftPosition = Math.floor(Math.random() * window.innerWidth);
-        const topRelative = Math.floor((1 - distanceScale) * window.innerHeight * (1 - horizonFactor));
+        const topRelative = Math.floor(rangeScale * window.innerHeight * (1 - horizonFactor));
         let topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
         leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
         topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
@@ -267,12 +271,12 @@
         chickElement.classList.add("floating-chick");
         const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor));
         const distance = Math.random();
-        const distanceScale = (Math.exp(distance * bunnySizes.length) - 1) / (Math.exp(bunnySizes.length) - 1);
-        const topRelative = Math.floor((1 - distanceScale) * rangeHeight);
+        const rangeScale = getRangeScale(distance);
+        const topRelative = Math.floor(rangeScale * rangeHeight);
         const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
         const leftPosition = Math.floor(Math.random() * window.innerWidth);
 
-        let chickSize = Math.round(getSizeByDistanceScale(distanceScale));
+        let chickSize = Math.round(getSizeByRangeScale(rangeScale));
         chickElement.innerHTML = chick1;
         chickElement.style.fontSize = `${chickSize}px`;
         chickElement.style.top = `${topPosition}px`;
@@ -289,7 +293,7 @@
           translateY = (topRelative + translateY + deltaY * chickSize) % rangeHeight - topRelative;
           chickElement.style.transform = `translate(${translateX}px, ${translateY}px) scaleX(${scaleX})`;
 
-          chickSize = Math.round(getSizeByDistanceScale((topRelative + translateY) / rangeHeight));
+          chickSize = Math.round(getSizeByRangeScale((topRelative + translateY) / rangeHeight));
           chickElement.style.fontSize = `${chickSize}px`;
         }, intervalTime / 2);
       };
