@@ -208,6 +208,7 @@
       }
 
       const horizonFactor = .7;
+      const chickBunnySizeRatio = 2;
 
       const getRangeScale = distance => {
         return (2 ** ((1 - distance) * bunnySizes.length) - 1) / (2 ** bunnySizes.length - 1);
@@ -271,7 +272,7 @@
         const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor));
         const distance = Math.random();
         const rangeScale = getRangeScale(distance);
-        let chickSize = Math.round(getSizeByRangeScale(rangeScale));
+        let chickSize = Math.round(chickBunnySizeRatio * getSizeByRangeScale(rangeScale));
         const topRelative = Math.floor(rangeScale * rangeHeight);
         const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative - chickSize;
         const leftPosition = Math.floor(Math.random() * window.innerWidth);
@@ -292,7 +293,7 @@
           translateY = (topRelative + translateY + deltaY * chickSize + rangeHeight) % rangeHeight - topRelative;
           chickElement.style.transform = `translate(${translateX}px, ${translateY}px) scaleX(${scaleX})`;
 
-          chickSize = Math.round(getSizeByRangeScale((topRelative + translateY) / rangeHeight));
+          chickSize = Math.round(chickBunnySizeRatio * getSizeByRangeScale((topRelative + translateY) / rangeHeight));
           chickElement.style.fontSize = `${chickSize}px`;
         }, intervalTime / 2);
       };
