@@ -286,16 +286,17 @@
 
         let translateX = 0, translateY = 0, scaleX = 1;
         const framesPerSecond = 25;
-        const stepSizeRatio = .5;
-        const stickiness = .9;
+        const stepSizeRatio = .1;
+        const stickinessX = .9;
+        const stickinessY = .9;
         let lastTime = performance.now();
         let deltaX = Math.floor(Math.random() * 3) - 1;
         let deltaY = Math.floor(Math.random() * 3) - 1;
         range = timestamp => {
           if (timestamp - lastTime >= 1000 / framesPerSecond) {
             lastTime = timestamp;
-            deltaX = Math.random() < stickiness ? deltaX : deltaX == 0 ? Math.sign(Math.random() * 2 - 1) : 0;
-            deltaY = Math.random() < stickiness ? deltaY : deltaY == 0 ? Math.sign(Math.random() * 2 - 1) : 0;
+            deltaX = Math.random() < stickinessX ? deltaX : deltaX == 0 ? Math.sign(Math.random() * 2 - 1) : 0;
+            deltaY = Math.random() < stickinessY ? 0 : Math.sign(Math.random() * 2 - 1);
             scaleX = deltaX == 0 ? scaleX : -deltaX;
             chickElement.innerHTML = deltaX == 0 ? chick1 : chick2;
             translateX = (leftPosition + translateX + deltaX * chickSize * stepSizeRatio + window.innerWidth) % window.innerWidth - leftPosition;
