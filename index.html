@@ -270,7 +270,7 @@
         const chick2 = "&#128019;";
         const chickElement = document.createElement("div");
         chickElement.classList.add("floating-chick");
-        const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor));
+        const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor)) - chickBunnySizeRatio * bunnySizes.at(-1);
         const distance = Math.random();
         const rangeScale = getRangeScale(distance);
         let chickSize = Math.round(chickBunnySizeRatio * getSizeByRangeScale(rangeScale));
