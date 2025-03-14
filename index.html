@@ -287,7 +287,7 @@
         const framesPerSecond = 4;
         const stepSizeRatio = .1;
         let lastTime = performance.now();
-        range = (timestamp) => {
+        range = timestamp => {
           if (timestamp - lastTime >= 1000 / framesPerSecond) {
             lastTime = timestamp;
             const deltaX = Math.floor(Math.random() * 3) - 1;
