@@ -230,11 +230,9 @@
         const rangeScale = getRangeScale(distance);
         const bunnySize = bunnySizes.findLast(s => s / Math.SQRT2 < getSizeByRangeScale(rangeScale));
 
-        let leftPosition = Math.floor(Math.random() * window.innerWidth);
+        const leftPosition = Math.floor(Math.random() * window.innerWidth);
         const topRelative = Math.floor(rangeScale * window.innerHeight * (1 - horizonFactor));
-        let topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
-        leftPosition = Math.min(leftPosition, window.innerWidth - bunnySize);
-        topPosition = Math.min(topPosition, window.innerHeight - bunnySize);
+        const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative - bunnySize;
 
         const bunnyElement = document.createElement("div");
         bunnyElement.innerHTML = bunny;
@@ -244,8 +242,9 @@
         bunnyElement.style.top = `${topPosition}px`;
         bunnyElement.style.transform = `scaleX(${scaleX})`;
         bunnyElement.style.animation = `bunny${bunnySize}${direction} 1s ease-in-out forwards`;
+
+        let currentLeft = leftPosition;
         bunnyElement.addEventListener("animationend", () => {
-          let currentLeft = parseFloat(bunnyElement.style.left);
           currentLeft = (currentLeft + 2 * bunnySize * scaleX * translateX + window.innerWidth) % window.innerWidth;
           bunnyElement.style.left = `${currentLeft}px`;
           bunnyElement.style.animation = "none";
@@ -272,11 +271,11 @@
         const rangeHeight = Math.floor(window.innerHeight * (1 - horizonFactor));
         const distance = Math.random();
         const rangeScale = getRangeScale(distance);
+        let chickSize = Math.round(getSizeByRangeScale(rangeScale));
         const topRelative = Math.floor(rangeScale * rangeHeight);
-        const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative;
+        const topPosition = Math.floor(window.innerHeight * horizonFactor) + topRelative - chickSize;
         const leftPosition = Math.floor(Math.random() * window.innerWidth);
 
-        let chickSize = Math.round(getSizeByRangeScale(rangeScale));
         chickElement.innerHTML = chick1;
         chickElement.style.fontSize = `${chickSize}px`;
         chickElement.style.top = `${topPosition}px`;
