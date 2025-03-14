@@ -284,11 +284,11 @@
         document.body.appendChild(chickElement);
 
         let translateX = 0, translateY = 0, scaleX = 1;
-        const framePerSecond = 4;
+        const framesPerSecond = 4;
         const stepSizeRatio = .1;
-        const lastTime = performance.now();
+        let lastTime = performance.now();
         range = (timestamp) => {
-          if (timestamp - lastTime >= 1000 / framePerSecond) {
+          if (timestamp - lastTime >= 1000 / framesPerSecond) {
             lastTime = timestamp;
             const deltaX = Math.floor(Math.random() * 3) - 1;
             const deltaY = Math.floor(Math.random() * 3) - 1;
