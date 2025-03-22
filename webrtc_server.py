@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 from aiohttp import web
-from aiortc import RTCConfiguration, RTCIceServer, RTCPeerConnection, RTCSessionDescription, MediaStreamTrack
+from aiortc import RTCConfiguration, RTCIceServer, RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from picamera2 import Picamera2
 import numpy as np
 import av
@@ -15,9 +15,7 @@ picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": RES, "format": "BGR888"}))
 picam2.start()
 
-class VideoStream(MediaStreamTrack):
-    kind = "video"
-
+class VideoStream(VideoStreamTrack):
     def __init__(self):
         super().__init__()
         self.color_mode = 1
